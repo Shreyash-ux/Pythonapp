@@ -1,0 +1,92 @@
+{
+  "info": {
+    "name": "Student API Collection",
+    "_postman_id": "student-api-collection",
+    "description": "Generated from curl API test script",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://127.0.0.1:5000/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Healthcheck",
+      "request": {
+        "method": "GET",
+        "url": "{{BASE_URL}}/healthcheck"
+      }
+    },
+    {
+      "name": "Add Student",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Doe\",\n  \"age\": 22,\n  \"email\": \"john@example.com\"\n}"
+        },
+        "url": "{{BASE_URL}}/students"
+      }
+    },
+    {
+      "name": "Get All Students",
+      "request": {
+        "method": "GET",
+        "url": "{{BASE_URL}}/students"
+      }
+    },
+    {
+      "name": "Get Student by ID",
+      "request": {
+        "method": "GET",
+        "url": "{{BASE_URL}}/students/1"
+      }
+    },
+    {
+      "name": "Update Student",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Updated\",\n  \"age\": 23\n}"
+        },
+        "url": "{{BASE_URL}}/students/1"
+      }
+    },
+    {
+      "name": "Verify Update",
+      "request": {
+        "method": "GET",
+        "url": "{{BASE_URL}}/students/1"
+      }
+    },
+    {
+      "name": "Delete Student",
+      "request": {
+        "method": "DELETE",
+        "url": "{{BASE_URL}}/students/1"
+      }
+    },
+    {
+      "name": "Final List",
+      "request": {
+        "method": "GET",
+        "url": "{{BASE_URL}}/students"
+      }
+    }
+  ]
+}
