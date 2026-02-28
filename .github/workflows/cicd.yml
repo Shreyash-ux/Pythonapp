@@ -5,37 +5,44 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build-test-deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, aws]
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # ---- PYTHON SETUP ----
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
-      # ---- TESTS ----
+      - name: Lint
+        run: |
+          pip install flake8
+          flake8 .
+
       - name: Run Tests
-        run: |
-          pytest || true
+        run: pytest
 
-      # ---- DOCKER BUILD ----
       - name: Build Docker Image
         run: |
-          docker build -t pythonapp:latest .
+          docker build -t pythonapp:${{ github.sha }} .
 
-      # ---- DEPLOY ----
-      - name: Deploy Container
+      - name: Deploy Container (Zero downtime-ish)
         run: |
-          docker stop pythonapp || true
-          docker rm pythonapp || true
-          docker run -d --name pythonapp -p 5000:5000 pythonapp:latest
+          docker rm -f pythonapp || true
+          docker run -d \
+            --name pythonapp \
+            -p 5000:5000 \
+            pythonapp:${{ github.sha }}
+
+      - name: Health Check
+        run: |
+          sleep 5
+          curl -f http://localhost:5000
