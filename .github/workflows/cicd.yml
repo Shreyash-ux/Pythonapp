@@ -2,49 +2,52 @@ name: Python CI/CD
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
 
 permissions:
   contents: read
 
 jobs:
-  build-test-deploy:
-    runs-on: [self-hosted, aws]
 
+  lint:
+    runs-on: [self-hosted, aws]
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - run: pip install flake8
+      - run: flake8 .
 
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
+  test:
+    runs-on: [self-hosted, aws]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: pytest
 
-      - name: Lint
-        run: |
-          pip install flake8
-          flake8 .
+  build:
+    needs: [lint, test]
+    runs-on: [self-hosted, aws]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t pythonapp:${{ github.sha }} .
 
-      - name: Run Tests
-        run: pytest
-
-      - name: Build Docker Image
-        run: |
-          docker build -t pythonapp:${{ github.sha }} .
-
-      - name: Deploy Container (Zero downtime-ish)
-        run: |
+  deploy:
+    needs: build
+    runs-on: [self-hosted, aws]
+    steps:
+      - run: |
           docker rm -f pythonapp || true
           docker run -d \
             --name pythonapp \
             -p 5000:5000 \
             pythonapp:${{ github.sha }}
 
-      - name: Health Check
-        run: |
+      - run: |
           until curl -s http://localhost:5000/api/v1/healthcheck; do
-            echo "Waiting for service..."
             sleep 2
           done
