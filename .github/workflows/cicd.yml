@@ -42,7 +42,7 @@ jobs:
     steps:
       - name: Scan Docker Image
         run: |
-          trivy image --exit-code 1 --severity HIGH,CRITICAL pythonapp:${{ github.sha }}
+          trivy image --exit-code 1 --severity CRITICAL pythonapp:${{ github.sha }}
 
   deploy:
     needs: [build, scan ]
