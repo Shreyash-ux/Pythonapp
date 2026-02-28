@@ -28,13 +28,29 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
       - run: pytest
-
+  
   build:
     needs: [lint, test]
     runs-on: [self-hosted, aws]
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t pythonapp:${{ github.sha }} .
+
+  scan:
+    needs: build
+    runs-on: [self-hosted, aws]
+    steps:
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb noble main | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+      - name: Scan Docker Image
+        run: |
+          trivy image --exit-code 1 --severity HIGH,CRITICAL pythonapp:${{ github.sha }}
 
   deploy:
     needs: build
@@ -48,6 +64,9 @@ jobs:
             pythonapp:${{ github.sha }}
 
       - run: |
-          until curl -s http://localhost:5000/api/v1/healthcheck; do
-            sleep 2
+          for i in {1..15}; do
+             curl -f http://localhost:5000/api/v1/healthcheck && exit 0
+             sleep 2
           done
+          echo "Health check failed"
+          exit 1
