@@ -1,11 +1,14 @@
-run:
-	python run.py
+IMAGE=student-api
+VERSION=1.0.0
+
+start-db:
+	docker-compose up -d db
 
 migrate:
-	flask db migrate
+	docker-compose run --rm api flask db upgrade
 
-upgrade:
-	flask db upgrade
+build-api:
+	docker build -t $(IMAGE):$(VERSION) .
 
-test:
-	pytest
+run-api: start-db migrate
+	docker-compose up -d api
