@@ -44,7 +44,7 @@ jobs:
 
       - name: Health Check
         run: |
-          until curl -s http://localhost:5000/health; do
+          until curl -s http://localhost:5000/api/v1/healthcheck; do
             echo "Waiting for service..."
             sleep 2
           done
