@@ -4,6 +4,7 @@ from app.models import Student
 
 api = Blueprint("api", __name__)
 
+
 @api.route("/healthcheck")
 def health():
     return {"status": "ok"}, 200

@@ -5,10 +5,12 @@ import os
 
 db = SQLAlchemy()
 
+
 def create_app():
     app = Flask(__name__)
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///students.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+        "DATABASE_URL", "sqlite:///students.db")
 
     db.init_app(app)
     Migrate(app, db)
