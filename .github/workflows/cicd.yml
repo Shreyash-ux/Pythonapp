@@ -40,14 +40,6 @@ jobs:
     needs: build
     runs-on: [self-hosted, aws]
     steps:
-      - name: Install Trivy
-        run: |
-          apt-get update
-          apt-get install -y wget gnupg
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo deb https://aquasecurity.github.io/trivy-repo/deb noble main | sudo tee /etc/apt/sources.list.d/trivy.list
-          apt-get update
-          apt-get install -y trivy
       - name: Scan Docker Image
         run: |
           trivy image --exit-code 1 --severity HIGH,CRITICAL pythonapp:${{ github.sha }}
